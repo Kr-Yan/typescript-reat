@@ -55,4 +55,12 @@ export interface Token {
   percent_rug?: number;
 }
 
+export type TabType =
+  | "trenches"
+  | "new pair"
+  | "trending"
+  | "copytrade"
+  | "monitor"
+  | "follow";
+
 export type TokenStatusFilter = "all" | "completing" | "completed";
