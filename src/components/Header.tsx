@@ -91,7 +91,10 @@ const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
         <div>setting</div>
 
         {/* two side for login */}
-        <div>Wallet</div>
+        <div>SignUp</div>
+        <div>LogIn</div>
+
+        {/* <div>Wallet</div> */}
       </div>
     </div>
   );

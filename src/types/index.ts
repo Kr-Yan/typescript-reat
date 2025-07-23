@@ -18,7 +18,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  walletAddress: string;
+  wallets: Record<string, string>;
   balance: number;
   inviteCode?: string;
 }

@@ -4,15 +4,15 @@ import { X } from "lucide-react";
 import { type CopyTrader, type User } from "../types";
 
 interface CopyTradeCreationPageProps {
-  //   selectedTrader?: CopyTrader | null;
-  //   user: User;
+  selectedTrader?: CopyTrader | null;
+  user: User;
   onBack: () => void;
   //   onSuccess: () => void;
 }
 
 const CopyTradeCreationPage: React.FC<CopyTradeCreationPageProps> = ({
-  //   selectedTrader,
-  //   user,
+  selectedTrader,
+  user,
   onBack,
   //   onSuccess,
 }) => {
@@ -50,6 +50,29 @@ const CopyTradeCreationPage: React.FC<CopyTradeCreationPageProps> = ({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* wallet section */}
+      {/* <div>
+        for (let i=0; i<user.walletName.length; i++){
+            <span>uer.walletName[i]</span>
+        }
+      </div> */}
+
+      {/* Copy Form section */}
+      <div>
+        <h3>Copy From</h3>
+        {/* <div>selectedTrader.id</div>
+        <div>selectedTrader.rank</div> */}
+
+        {/* <div>
+            {selectedTrader? (
+                <div><span>
+                </span></div>
+                <div>
+
+                </div>):()}
+        </div> */}
       </div>
       {/* {selectedTrader ? selectedTrader.name : "None selected"}
       </div>
