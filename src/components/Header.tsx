@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { type TabType } from "../types/index";
+import { type TabType, type User } from "../types/index";
 import { Search } from "lucide-react";
 // - pages (trenches, newpair, trending, copytrade etc.)
 // -logo
@@ -11,11 +11,12 @@ import { Search } from "lucide-react";
 // -wallet : dropdown
 
 interface HeaderProps {
+  user: User | null;
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
+const Header: React.FC<HeaderProps> = ({ user, activeTab, setActiveTab }) => {
   const [searchBar, setSearchBar] = useState();
   const [walletDropdown, setWalletDropdown] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -91,8 +92,17 @@ const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
         <div>setting</div>
 
         {/* two side for login */}
-        <div>SignUp</div>
-        <div>LogIn</div>
+
+        <div>
+          {user ? (
+            <div>Wallet</div>
+          ) : (
+            <>
+              <button className="px-3 py-2">SignUp</button>
+              <button className="px-3 py-2">LogIn</button>
+            </>
+          )}
+        </div>
 
         {/* <div>Wallet</div> */}
       </div>
