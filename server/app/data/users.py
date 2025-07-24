@@ -1,8 +1,14 @@
-from app.models.user import User
-from app.models.user import UserWithPassword
+# from app.models.user import User
+# from app.models.user import UserWithPassword
 
-mock_users_with_passwords = [
-    UserWithPassword(
+from app.services.data_service import data_service
+
+
+mock_users_with_passwords = data_service.load_users()
+
+if not mock_users_with_passwords:
+    from app.models.user import UserWithPassword
+    default_users=[ UserWithPassword(
         id="1",
         email="demo@gmgn.ai",
         name="Demo User",
@@ -14,17 +20,10 @@ mock_users_with_passwords = [
         balance=84.54,
         password="demo123",
         invite_code="DEMO123ABC"  # This invite code is already used
-    ),
-    UserWithPassword(
-        id="2",
-        email="trader@gmgn.ai",
-        name="Pro Trader",
-        wallets={
-            "Primary": "9QwE3...7yH",
-            "Backup": "2Mn8v...3kL"
-        },
-        balance=156.23,
-        password="trader456",
-        invite_code="TRADER456XYZ"  # This invite code is already used
-    )
-]
+    )]
+
+    mock_users_with_passwords.extend(default_users)
+    data_service.save_users(mock_users_with_passwords)
+
+
+

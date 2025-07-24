@@ -1,9 +1,9 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from typing import Optional, Dict
 
 class User(BaseModel):
     id: str
-    email: EmailStr
+    email: str
     name: str
     wallets: Dict[str, str]
     balance: float
@@ -13,7 +13,7 @@ class User(BaseModel):
 class UserWithPassword(BaseModel):
     """Internal model with password for storage"""
     id: str
-    email: EmailStr
+    email: str
     name: str
     wallets: Dict[str, str]
     balance: float
@@ -21,11 +21,11 @@ class UserWithPassword(BaseModel):
     password: str  # Plain text password for development
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    email: str
     password: str
 
 class UserRegister(BaseModel):
-    email: EmailStr
+    email: str
     password: str
     invite_code: str
 

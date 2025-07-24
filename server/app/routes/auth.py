@@ -5,9 +5,9 @@ from app.models.user import UserLogin, UserRegister, UserResponse
 router= APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/login")
-async def login(credentials:UserLogin):
+def login(credentials:UserLogin):
     try: 
-        user= await AuthController.login(credentials)
+        user= AuthController.login(credentials)
         return user
     except Exception as e:
         raise HTTPException(status_code=401, detail=str(e))
@@ -21,7 +21,7 @@ def signup(user_date: UserRegister):
     except Exception as e:
         raise HTTPException(status_code=401, detail=str(e))
     
-    
+
 
 
 
