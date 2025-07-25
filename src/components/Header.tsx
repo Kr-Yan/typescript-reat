@@ -14,9 +14,15 @@ interface HeaderProps {
   user: User | null;
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
+  onLogin: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ user, activeTab, setActiveTab }) => {
+const Header: React.FC<HeaderProps> = ({
+  user,
+  activeTab,
+  setActiveTab,
+  onLogin,
+}) => {
   const [searchBar, setSearchBar] = useState();
   const [walletDropdown, setWalletDropdown] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -99,7 +105,9 @@ const Header: React.FC<HeaderProps> = ({ user, activeTab, setActiveTab }) => {
           ) : (
             <>
               <button className="px-3 py-2">SignUp</button>
-              <button className="px-3 py-2">LogIn</button>
+              <button onClick={onLogin} className="px-3 py-2">
+                LogIn
+              </button>
             </>
           )}
         </div>
