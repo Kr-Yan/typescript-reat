@@ -12,6 +12,14 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
+  const handleLogInSuccess = (userData: User) => {
+    setUser(userData);
+  };
+
+  if (user) {
+    return <TrenchesPage tokens={[]} />;
+  }
+
   const renderActivePage = () => {
     switch (activeTab) {
       case "trenches":
@@ -31,7 +39,7 @@ const App: React.FC = () => {
       />
       {renderActivePage()}
 
-      <LoginModal isOpen={showLoginModal} />
+      <LoginModal isOpen={showLoginModal} onLogin={handleLogInSuccess} />
     </div>
 
     // <BrowserRouter>

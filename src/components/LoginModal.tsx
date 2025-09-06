@@ -1,14 +1,23 @@
 import React, { useState } from "react";
 import { apiService } from "../services/auth_api";
+import { type User } from "../types";
 
 interface LoginModalProps {
   isOpen: boolean;
+  onLogin: (user: User) => void;
 }
 
-const LoginModal: React.FC<LoginModalProps> = ({ isOpen }) => {
+const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onLogin }) => {
   if (!isOpen) return null;
+
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const handleLogin = async () => {
+    const user = await apiService.login(email, password);
+    onLogin(user);
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -39,7 +48,10 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen }) => {
 
         <div>Forget Password?</div>
 
-        <button className="w-full bg-green-700 font-bold rounded-lg">
+        <button
+          onClick={handleLogin}
+          className="w-full bg-green-700 font-bold rounded-lg"
+        >
           Log In
         </button>
 

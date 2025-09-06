@@ -12,8 +12,13 @@ export const apiService = {
     });
 
     const data = await response.json();
-    if (!data.success) throw new Error(data.detail);
-    return data.user;
+    console.log("Response:", response);
+    console.log("Response status: ", response.status);
+
+    if (!response.ok) {
+      throw new Error(data.detail || `HTTP ${response.status}`);
+    }
+    return data;
   },
 
   register: async (
@@ -32,7 +37,10 @@ export const apiService = {
     });
 
     const data = await response.json();
-    if (!data.success) throw new Error(data.detail);
+
+    if (!response.ok) {
+      throw new Error(data.detail || `HTTP${response.status}`);
+    }
     return data;
   },
 };
