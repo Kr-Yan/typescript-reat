@@ -1,12 +1,22 @@
--- app/database/schema.sql
+-- app/database/schema.sql (Fixed)
 -- Database schema for GMGN Trading Platform
 
--- Extension for UUID generation
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Try to create UUID extension (might fail on some PostgreSQL installations)
+-- This is why we're getting the error
+DO $$ 
+BEGIN
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+EXCEPTION 
+    WHEN duplicate_object THEN NULL;
+    WHEN insufficient_privilege THEN NULL;
+END $$;
+
+-- Alternative: Use gen_random_uuid() which is built into modern PostgreSQL
+-- or just use regular UUIDs with application-generated values
 
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- Changed from uuid_generate_v4()
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     name VARCHAR(100) NOT NULL,
@@ -20,7 +30,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Tokens table
 CREATE TABLE IF NOT EXISTS tokens (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- Changed from uuid_generate_v4()
     symbol VARCHAR(20) UNIQUE NOT NULL,
     name VARCHAR(100) NOT NULL,
     contract_address VARCHAR(100) UNIQUE NOT NULL,
@@ -35,7 +45,7 @@ CREATE TABLE IF NOT EXISTS tokens (
 
 -- User portfolios
 CREATE TABLE IF NOT EXISTS portfolios (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- Changed from uuid_generate_v4()
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     token_id UUID NOT NULL REFERENCES tokens(id) ON DELETE CASCADE,
     amount DECIMAL(20, 8) NOT NULL DEFAULT 0.0,
@@ -48,7 +58,7 @@ CREATE TABLE IF NOT EXISTS portfolios (
 
 -- Trading history
 CREATE TABLE IF NOT EXISTS trades (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- Changed from uuid_generate_v4()
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     token_id UUID NOT NULL REFERENCES tokens(id) ON DELETE CASCADE,
     trade_type VARCHAR(10) NOT NULL CHECK (trade_type IN ('buy', 'sell')),
@@ -62,7 +72,7 @@ CREATE TABLE IF NOT EXISTS trades (
 
 -- User wallets
 CREATE TABLE IF NOT EXISTS wallets (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- Changed from uuid_generate_v4()
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
     address VARCHAR(100) NOT NULL,
@@ -71,7 +81,7 @@ CREATE TABLE IF NOT EXISTS wallets (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Indexes for performance (this is where you learn about database optimization!)
+-- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_wallet_address ON users(wallet_address);
 CREATE INDEX IF NOT EXISTS idx_tokens_symbol ON tokens(symbol);
@@ -85,7 +95,7 @@ CREATE INDEX IF NOT EXISTS idx_trades_created_at ON trades(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_wallets_user_id ON wallets(user_id);
 CREATE INDEX IF NOT EXISTS idx_wallets_address ON wallets(address);
 
--- Insert some sample tokens
+-- Insert sample tokens (only if they don't exist)
 INSERT INTO tokens (symbol, name, contract_address, current_price, price_change_24h) VALUES
 ('SOL', 'Solana', 'So11111111111111111111111111111111111111112', 25.50, 2.5),
 ('BTC', 'Bitcoin', 'bitcoin-contract-address', 43500.00, -1.2),
@@ -94,7 +104,7 @@ INSERT INTO tokens (symbol, name, contract_address, current_price, price_change_
 ('RAY', 'Raydium', 'raydium-contract-address', 1.85, 5.2)
 ON CONFLICT (symbol) DO NOTHING;
 
--- Trigger to update updated_at timestamp
+-- Trigger function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -103,6 +113,18 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_tokens_updated_at BEFORE UPDATE ON tokens FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_portfolios_updated_at BEFORE UPDATE ON portfolios FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Create triggers
+DROP TRIGGER IF EXISTS update_users_updated_at ON users;
+CREATE TRIGGER update_users_updated_at 
+    BEFORE UPDATE ON users 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_tokens_updated_at ON tokens;    
+CREATE TRIGGER update_tokens_updated_at 
+    BEFORE UPDATE ON tokens 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_portfolios_updated_at ON portfolios;
+CREATE TRIGGER update_portfolios_updated_at 
+    BEFORE UPDATE ON portfolios 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

@@ -1,52 +1,37 @@
-# main.py
+# main.py (Updated for Raw SQL)
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-# Import your existing routes if they exist
-try:
-    from app.routes import auth
-    ROUTES_EXIST = True
-except ImportError:
-    ROUTES_EXIST = False
-    print("Routes not found, using basic setup")
+# from app.routes import auth
+from app.config import settings
+from app.database.connection import init_db, close_db
+from app.routes import auth
 
-# Import database setup
-try:
-    from app.database.connection import init_db, close_db
-    DATABASE_SETUP = True
-except ImportError:
-    DATABASE_SETUP = False
-    print("Database setup not found, skipping DB initialization")
 
-# Lifespan event handler
+# Lifespan event handler for database initialization
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    print("🚀 Starting GMGN Trading API...")
-    
-    if DATABASE_SETUP:
-        await init_db()
-        print("✅ Database initialized!")
-    else:
-        print("Database not configured")
+    print("🚀 Starting GMGN Trading API with Raw SQL...")
+    await init_db()
+    print("✅ Database initialized with Raw SQL!")
     
     yield
     
     # Shutdown
     print("🔄 Shutting down GMGN Trading API...")
-    if DATABASE_SETUP:
-        await close_db()
+    await close_db()
     print("👋 Goodbye!")
 
-# Create FastAPI app
+# Create FastAPI app with lifespan
 app = FastAPI(
     title="GMGN Trading API",
-    description="FastAPI backend for Crypto Trading Platform",
-    version="2.0.0",
+    description="FastAPI backend with Raw SQL and PostgreSQL",
+    version="2.0.0-raw-sql",
     docs_url="/docs",
     redoc_url="/redoc",
-    lifespan=lifespan if DATABASE_SETUP else None
+    lifespan=lifespan
 )
 
 # CORS middleware
@@ -58,37 +43,52 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-# Include routes if they exist
-if ROUTES_EXIST:
-    app.include_router(auth.router, prefix="/api")
+# Include routes
+app.include_router(auth.router, prefix="/api")
 
-# Basic routes
 @app.get("/api/health")
 async def health_check():
     """Health check endpoint"""
     return {
         "status": "OK",
-        "message": "GMGN API v2.0 is running!",
-        "database": "PostgreSQL" if DATABASE_SETUP else "Not configured",
-        "routes": "Loaded" if ROUTES_EXIST else "Basic"
+        "message": "GMGN API v2.0 with Raw SQL is running!",
+        "database": "PostgreSQL with Raw SQL",
+        "version": "2.0.0-raw-sql"
     }
 
 @app.get("/")
 async def root():
     """Root endpoint"""
     return {
-        "message": "GMGN Trading API v2.0",
+        "message": "GMGN Trading API v2.0 - Raw SQL Edition",
         "docs": "/docs",
-        "health": "/api/health"
+        "health": "/api/health",
+        "database": "Raw SQL + asyncpg"
     }
 
-# Test endpoint
-@app.get("/api/test")
-async def test_endpoint():
-    """Test endpoint to verify server is working"""
-    return {
-        "success": True,
-        "message": "Server is working!",
-        "database_configured": DATABASE_SETUP,
-        "routes_configured": ROUTES_EXIST
-    }
+# Debug endpoint to test raw SQL
+@app.get("/api/debug/users")
+async def debug_users():
+    """Debug endpoint to see raw SQL in action"""
+    from app.database.connection import execute_query
+    
+    query = """
+        SELECT 
+            id, 
+            email, 
+            name, 
+            balance, 
+            created_at,
+            CASE 
+                WHEN balance > 50 THEN 'High Balance'
+                WHEN balance > 10 THEN 'Medium Balance'
+                ELSE 'Low Balance'
+            END as balance_category
+        FROM users 
+        WHERE is_active = TRUE
+        ORDER BY created_at DESC
+        LIMIT 10
+    """
+    
+    results = await execute_query(query)
+    return [dict(row) for row in results]
